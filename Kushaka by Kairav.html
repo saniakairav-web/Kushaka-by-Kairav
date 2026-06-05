@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>KUSHAKA — Where the Shadow Bleeds</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --blood: #8b0000;
+  --crimson: #c0392b;
+  --ember: #d4521a;
+  --gold: #c9a84c;
+  --gold-light: #f0d080;
+  --gold-dim: #7a6030;
+  --shadow: #060408;
+  --deep: #0e0810;
+  --mid: #160d1a;
+  --surface: #1c1020;
+  --card: #120d16;
+  --text: #cdb89a;
+  --muted: #6a5a48;
+  --faint: #352a20;
+  --white: #f5ede0;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;font-size:16px;}
+body{
+  background:var(--shadow);
+  color:var(--text);
+  font-family:'EB Garamond',serif;
+  overflow-x:hidden;
+  cursor:default;
+}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--shadow);}
+::-webkit-scrollbar-thumb{background:var(--blood);border-radius:2px;}
+
+/* ─── NOISE OVERLAY ─── */
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:0.4;
+}
+
+/* ─── NAV ─── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  background:rgba(6,4,8,0.92);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(201,168,76,0.1);
+  padding:0 40px;
+  height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{
+  font-family:'Cinzel Decorative',serif;
+  font-size:1.1rem;
+  font-weight:900;
+  background:linear-gradient(135deg,var(--gold-light),var(--gold),var(--ember));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  letter-spacing:0.08em;
+  white-space:nowrap;
+}
+.nav-brand span{
+  font-size:0.55rem;
+  display:block;
+  letter-spacing:0.4em;
+  color:var(--muted);
+  -webkit-text-fill-color:var(--muted);
+  font-family:'Cinzel',serif;
+  font-weight:400;
+  margin-top:1px;
+}
+.nav-links{
+  display:flex;align-items:center;gap:4px;
+  list-style:none;
+}
+.nav-links li a, .nav-links li button{
+  font-family:'Cinzel',serif;
+  font-size:0.68rem;
+  letter-spacing:0.25em;
+  text-transform:uppercase;
+  color:var(--muted);
+  text-decoration:none;
+  background:none;border:none;cursor:pointer;
+  padding:8px 14px;
+  border-radius:2px;
+  transition:color 0.25s,background 0.25s;
+  position:relative;
+  white-space:nowrap;
+}
+.nav-links li a:hover,.nav-links li button:hover{color:var(--gold);}
+.nav-links li a.active,.nav-links li button.active{
+  color:var(--gold);
+  background:rgba(201,168,76,0.07);
+}
+.nav-links li a.active::after,.nav-links li button.active::after{
+  content:'';
+  position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);
+  width:20px;height:2px;background:var(--gold);border-radius:1px;
+}
+
+/* char dropdown */
+.char-dropdown{position:relative;}
+.char-dropdown-menu{
+  position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  background:rgba(12,8,16,0.98);
+  border:1px solid rgba(201,168,76,0.12);
+  border-top:2px solid var(--blood);
+  border-radius:2px;
+  min-width:200px;
+  padding:8px 0;
+  display:none;
+  z-index:200;
+  box-shadow:0 20px 60px rgba(0,0,0,0.8);
+}
+.char-dropdown:hover .char-dropdown-menu{display:block;}
+.char-dropdown-menu a{
+  display:block;
+  font-family:'Cinzel',serif;
+  font-size:0.65rem;
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  color:var(--muted);
+  text-decoration:none;
+  padding:10px 20px;
+  transition:color 0.2s,background 0.2s;
+  cursor:pointer;
+}
+.char-dropdown-menu a:hover{
+  color:var(--gold);
+  background:rgba(201,168,76,0.05);
+}
+.char-dropdown-menu a.player-link{color:rgba(201,168,76,0.7);}
+.char-dropdown-menu a.ally-link{color:rgba(74,143,168,0.7);}
+.char-dropdown-menu a.enemy-link{color:rgba(139,0,0,0.9);}
+.char-dropdown-menu .sep{
+  height:1px;background:rgba(201,168,76,0.08);margin:6px 0;
+}
+
+/* hamburger mobile */
+.nav-toggle{
+  display:none;background:none;border:none;cursor:pointer;
+  flex-direction:column;gap:5px;padding:8px;
+}
+.nav-toggle span{
+  display:block;width:22px;height:1px;background:var(--gold);
+  transition:transform 0.3s;
+}
+
+/* ─── PAGES ─── */
+.page{display:none;padding-top:64px;min-height:100vh;}
+.page.active{display:block;}
+
+/* ─── HERO ─── */
+.hero{
+  position:relative;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;
+  padding:80px 24px 60px;
+  overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 20%,rgba(60,10,20,0.5) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 50% at 15% 80%,rgba(30,5,15,0.4) 0%,transparent 55%),
+    radial-gradient(ellipse 40% 40% at 85% 60%,rgba(20,5,12,0.3) 0%,transparent 55%);
+  pointer-events:none;
+}
+.hero-orb{
+  position:absolute;top:12%;left:50%;transform:translateX(-50%);
+  width:500px;height:500px;
+  background:radial-gradient(circle,rgba(139,0,0,0.14) 0%,transparent 70%);
+  animation:orb 5s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes orb{
+  0%,100%{transform:translateX(-50%) scale(1);opacity:0.7;}
+  50%{transform:translateX(-50%) scale(1.2);opacity:1;}
+}
+.eyeline{
+  font-family:'Cinzel',serif;font-size:0.65rem;
+  letter-spacing:0.55em;color:var(--blood);text-transform:uppercase;
+  margin-bottom:20px;
+  animation:fadeSlide 1s ease both;
+}
+.hero-title{
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(3.5rem,12vw,9rem);
+  font-weight:900;line-height:0.9;
+  background:linear-gradient(175deg,var(--gold-light) 0%,var(--gold) 35%,var(--ember) 70%,var(--blood) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 50px rgba(139,0,0,0.45));
+  animation:fadeSlide 1.2s ease both;
+  position:relative;z-index:1;
+}
+.hero-sub{
+  font-family:'Cinzel',serif;
+  font-size:clamp(0.7rem,1.8vw,0.95rem);
+  letter-spacing:0.5em;color:var(--muted);text-transform:uppercase;
+  margin-top:18px;animation:fadeSlide 1.4s ease both;
+}
+.divider-line{
+  width:160px;height:1px;margin:36px auto;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  animation:fadeSlide 1.6s ease both;
+}
+.hero-quote{
+  font-size:clamp(1rem,2.2vw,1.25rem);font-style:italic;
+  color:var(--text);max-width:540px;opacity:0.85;
+  animation:fadeSlide 1.8s ease both;line-height:1.7;
+}
+.hero-cta{
+  margin-top:48px;display:flex;gap:16px;flex-wrap:wrap;justify-content:center;
+  animation:fadeSlide 2s ease both;
+}
+.btn{
+  font-family:'Cinzel',serif;font-size:0.68rem;
+  letter-spacing:0.3em;text-transform:uppercase;
+  padding:14px 32px;border-radius:1px;cursor:pointer;
+  text-decoration:none;transition:all 0.3s ease;
+  display:inline-block;
+}
+.btn-primary{
+  background:var(--blood);color:var(--white);border:1px solid var(--blood);
+}
+.btn-primary:hover{background:var(--crimson);border-color:var(--crimson);box-shadow:0 0 30px rgba(139,0,0,0.5);}
+.btn-ghost{
+  background:transparent;color:var(--gold);border:1px solid rgba(201,168,76,0.3);
+}
+.btn-ghost:hover{background:rgba(201,168,76,0.08);border-color:var(--gold);}
+.scroll-down{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  font-family:'Cinzel',serif;font-size:0.6rem;
+  letter-spacing:0.4em;color:var(--muted);text-transform:uppercase;
+  animation:bob 2.5s ease-in-out infinite;
+}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0);opacity:0.5;}50%{transform:translateX(-50%) translateY(8px);opacity:1;}}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(-16px);}to{opacity:1;transform:translateY(0);}}
+
+/* ─── STORY PAGE ─── */
+.story-hero{
+  height:340px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:40px 24px;
+  background:linear-gradient(180deg,rgba(50,10,20,0.5) 0%,transparent 100%);
+  position:relative;
+  border-bottom:1px solid rgba(201,168,76,0.08);
+}
+.page-label{
+  font-family:'Cinzel',serif;font-size:0.65rem;
+  letter-spacing:0.55em;color:var(--blood);text-transform:uppercase;
+  margin-bottom:14px;
+}
+.page-title{
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(2rem,6vw,4rem);font-weight:700;
+  background:linear-gradient(135deg,var(--gold-light),var(--gold),var(--ember));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1.1;
+}
+.page-tagline{
+  font-style:italic;color:var(--muted);margin-top:14px;
+  font-size:1.05rem;
+}
+
+.story-container{max-width:820px;margin:0 auto;padding:60px 32px 100px;}
+
+.chapter{margin-bottom:56px;}
+.chapter-head{
+  display:flex;align-items:center;gap:16px;margin-bottom:24px;
+}
+.chapter-num{
+  font-family:'Cinzel Decorative',serif;
+  font-size:2rem;color:rgba(139,0,0,0.25);font-weight:900;
+  flex-shrink:0;line-height:1;
+}
+.chapter-info{flex:1;}
+.chapter-tag{
+  font-family:'Cinzel',serif;font-size:0.6rem;
+  letter-spacing:0.45em;color:var(--ember);text-transform:uppercase;
+}
+.chapter-name{
+  font-family:'Cinzel',serif;font-size:1.15rem;
+  color:var(--gold);margin-top:3px;font-weight:600;
+}
+.chapter-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(201,168,76,0.15),transparent);}
+
+.chapter-body{
+  background:linear-gradient(135deg,rgba(22,13,26,0.85),rgba(14,8,16,0.9));
+  border:1px solid rgba(201,168,76,0.08);
+  border-left:3px solid var(--blood);
+  padding:32px 36px;
+  border-radius:1px;
+  position:relative;
+  transition:border-left-color 0.3s,box-shadow 0.3s;
+}
+.chapter-body:hover{
+  border-left-color:var(--gold);
+  box-shadow:0 8px 40px rgba(0,0,0,0.5),inset 0 0 80px rgba(139,0,0,0.02);
+}
+.chapter-body::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,var(--blood),transparent);opacity:0.5;
+}
+.chapter-body p{
+  font-size:1.05rem;line-height:1.95;color:var(--text);
+  margin-bottom:16px;
+}
+.chapter-body p:last-child{margin-bottom:0;}
+.chapter-body em{color:var(--gold-light);font-style:italic;}
+.chapter-body strong{color:var(--white);font-weight:600;}
+.drop::first-letter{
+  font-family:'Cinzel Decorative',serif;
+  font-size:4rem;font-weight:900;float:left;
+  line-height:0.78;margin:6px 10px 0 0;
+  color:var(--gold);filter:drop-shadow(0 0 10px rgba(201,168,76,0.35));
+}
+
+/* ─── CHARACTERS PAGE ─── */
+.chars-hero{
+  height:300px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:40px 24px;
+  background:linear-gradient(180deg,rgba(40,5,15,0.6) 0%,transparent 100%);
+  border-bottom:1px solid rgba(201,168,76,0.08);
+}
+.chars-grid{
+  max-width:1100px;margin:0 auto;
+  padding:60px 32px 100px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:24px;
+}
+.char-card{
+  background:linear-gradient(160deg,rgba(22,13,26,0.95),rgba(10,6,14,0.98));
+  border:1px solid rgba(201,168,76,0.08);
+  border-top:3px solid;
+  border-radius:2px;
+  padding:32px 28px;
+  position:relative;overflow:hidden;
+  cursor:pointer;
+  transition:transform 0.3s,box-shadow 0.3s,background 0.3s;
+}
+.char-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(ellipse at top,rgba(139,0,0,0.04),transparent 60%);
+  opacity:0;transition:opacity 0.3s;
+}
+.char-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(0,0,0,0.6);}
+.char-card:hover::before{opacity:1;}
+.char-card.player{border-top-color:var(--gold);}
+.char-card.ally{border-top-color:#4a8fa8;}
+.char-card.enemy{border-top-color:var(--blood);}
+.char-card.neutral{border-top-color:var(--muted);}
+.char-card.kings{border-top-color:#6b4e1a;}
+.c-role{
+  font-family:'Cinzel',serif;font-size:0.58rem;
+  letter-spacing:0.4em;text-transform:uppercase;margin-bottom:10px;
+}
+.player .c-role{color:var(--gold);}
+.ally .c-role{color:#4a8fa8;}
+.enemy .c-role{color:var(--crimson);}
+.neutral .c-role{color:var(--muted);}
+.kings .c-role{color:#a07830;}
+.c-name{
+  font-family:'Cinzel Decorative',serif;
+  font-size:1.3rem;color:var(--white);
+  margin-bottom:14px;line-height:1.15;
+}
+.c-tagline{
+  font-style:italic;font-size:0.9rem;color:var(--muted);
+  margin-bottom:16px;border-left:2px solid var(--faint);
+  padding-left:12px;line-height:1.5;
+}
+.c-desc{font-size:0.92rem;color:var(--text);line-height:1.75;opacity:0.85;}
+.c-btn{
+  display:inline-block;
+  margin-top:20px;
+  font-family:'Cinzel',serif;font-size:0.58rem;
+  letter-spacing:0.3em;text-transform:uppercase;
+  color:var(--gold);border:1px solid rgba(201,168,76,0.2);
+  padding:8px 16px;border-radius:1px;
+  transition:all 0.25s;cursor:pointer;background:none;
+}
+.c-btn:hover{background:rgba(201,168,76,0.08);border-color:var(--gold);}
+
+/* ─── INDIVIDUAL CHARACTER PAGE ─── */
+.char-page{display:none;padding-top:64px;}
+.char-page.active{display:block;}
+.char-hero{
+  min-height:60vh;
+  display:flex;align-items:flex-end;justify-content:flex-start;
+  padding:80px 60px 60px;
+  position:relative;overflow:hidden;
+}
+.char-hero-bg{
+  position:absolute;inset:0;
+  pointer-events:none;
+}
+.char-hero-content{position:relative;z-index:1;max-width:600px;}
+.char-hero-role{
+  font-family:'Cinzel',serif;font-size:0.65rem;
+  letter-spacing:0.5em;text-transform:uppercase;
+  margin-bottom:16px;
+}
+.char-hero-name{
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(2.5rem,7vw,5rem);font-weight:900;
+  line-height:0.9;margin-bottom:20px;
+}
+.char-hero-quote{
+  font-style:italic;font-size:1.15rem;
+  line-height:1.65;max-width:480px;
+  padding-left:20px;border-left:3px solid;
+}
+.char-detail-body{
+  max-width:880px;margin:0 auto;
+  padding:60px 40px 100px;
+}
+.detail-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:20px;
+  margin-bottom:40px;
+}
+.detail-block{
+  background:linear-gradient(135deg,rgba(22,13,26,0.9),rgba(14,8,16,0.95));
+  border:1px solid rgba(201,168,76,0.08);
+  border-left:2px solid var(--blood);
+  padding:24px 28px;border-radius:1px;
+}
+.detail-block-title{
+  font-family:'Cinzel',serif;font-size:0.6rem;
+  letter-spacing:0.4em;text-transform:uppercase;
+  color:var(--ember);margin-bottom:10px;
+}
+.detail-block p{font-size:0.95rem;color:var(--text);line-height:1.8;}
+.detail-block em{color:var(--gold-light);font-style:italic;}
+.char-story-section h3{
+  font-family:'Cinzel',serif;font-size:0.7rem;
+  letter-spacing:0.4em;text-transform:uppercase;
+  color:var(--ember);margin-bottom:24px;
+  display:flex;align-items:center;gap:12px;
+}
+.char-story-section h3::after{
+  content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,rgba(229,90,28,0.25),transparent);
+}
+.char-story-section p{
+  font-size:1.05rem;color:var(--text);line-height:1.95;
+  margin-bottom:18px;
+}
+.char-story-section em{color:var(--gold-light);font-style:italic;}
+.char-story-section strong{color:var(--white);}
+.back-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:'Cinzel',serif;font-size:0.62rem;
+  letter-spacing:0.3em;text-transform:uppercase;
+  color:var(--muted);background:none;border:none;
+  cursor:pointer;padding:12px 0;
+  transition:color 0.25s;margin-bottom:40px;
+}
+.back-btn:hover{color:var(--gold);}
+.back-btn span{font-size:1rem;}
+
+/* ─── LORE/NAMES PAGE ─── */
+.lore-container{max-width:900px;margin:0 auto;padding:60px 32px 100px;}
+.lore-section{margin-bottom:60px;}
+.lore-title{
+  font-family:'Cinzel Decorative',serif;
+  font-size:1.4rem;color:var(--gold);
+  margin-bottom:6px;
+}
+.lore-sub{
+  font-size:0.88rem;color:var(--muted);font-style:italic;
+  margin-bottom:28px;
+}
+.names-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;
+}
+.name-tile{
+  background:rgba(22,13,26,0.8);
+  border:1px solid rgba(201,168,76,0.08);
+  border-left:2px solid var(--blood);
+  padding:18px 20px;border-radius:1px;
+  transition:border-left-color 0.25s,background 0.25s,transform 0.25s;
+}
+.name-tile:hover{
+  border-left-color:var(--gold);
+  background:rgba(35,20,42,0.8);
+  transform:translateX(4px);
+}
+.name-tile .nm{
+  font-family:'Cinzel',serif;font-size:0.95rem;
+  color:var(--gold);display:block;margin-bottom:4px;
+}
+.name-tile .nu{font-size:0.8rem;color:var(--muted);font-style:italic;}
+.theme-cards{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;
+}
+.theme-card{
+  background:linear-gradient(135deg,rgba(22,13,26,0.9),rgba(14,8,16,0.95));
+  border:1px solid rgba(201,168,76,0.08);
+  border-top:2px solid var(--blood);
+  padding:28px 24px;border-radius:1px;
+  transition:transform 0.3s,box-shadow 0.3s;
+}
+.theme-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.5);}
+.theme-card-title{
+  font-family:'Cinzel',serif;font-size:0.68rem;
+  letter-spacing:0.35em;text-transform:uppercase;
+  color:var(--ember);margin-bottom:12px;
+}
+.theme-card p{font-size:0.92rem;color:var(--text);line-height:1.75;}
+
+/* ─── PULL QUOTE ─── */
+.pull{
+  text-align:center;padding:70px 32px;max-width:680px;margin:0 auto;
+}
+.pull blockquote{
+  font-family:'EB Garamond',serif;
+  font-size:clamp(1.2rem,2.5vw,1.6rem);
+  font-style:italic;color:var(--gold-light);
+  line-height:1.65;position:relative;padding:0 32px;
+}
+.pull blockquote::before,.pull blockquote::after{
+  font-size:5rem;color:var(--blood);opacity:0.2;position:absolute;line-height:1;
+}
+.pull blockquote::before{content:'\201C';top:-20px;left:0;}
+.pull blockquote::after{content:'\201D';bottom:-50px;right:0;}
+.pull cite{
+  display:block;margin-top:30px;
+  font-family:'Cinzel',serif;font-size:0.65rem;
+  letter-spacing:0.4em;text-transform:uppercase;color:var(--muted);font-style:normal;
+}
+
+/* ─── HR ─── */
+.hr-deco{
+  display:flex;align-items:center;gap:14px;
+  max-width:860px;margin:0 auto;padding:0 32px;
+}
+.hr-deco::before,.hr-deco::after{
+  content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,168,76,0.15),transparent);
+}
+.diamond{
+  width:5px;height:5px;background:var(--gold);
+  transform:rotate(45deg);opacity:0.4;flex-shrink:0;
+}
+
+/* ─── REVEAL ─── */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity 0.65s ease,transform 0.65s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+/* ─── FOOTER ─── */
+footer{
+  position:relative;z-index:1;text-align:center;
+  padding:50px 20px 36px;
+  border-top:1px solid rgba(201,168,76,0.07);
+}
+.footer-brand{
+  font-family:'Cinzel Decorative',serif;font-size:1.1rem;color:var(--gold);margin-bottom:6px;
+}
+footer p{
+  font-size:0.7rem;color:var(--muted);
+  font-family:'Cinzel',serif;letter-spacing:0.25em;text-transform:uppercase;
+}
+
+/* ─── MOBILE ─── */
+@media(max-width:768px){
+  nav{padding:0 20px;}
+  .nav-links{display:none;}
+  .nav-links.open{
+    display:flex;flex-direction:column;
+    position:fixed;top:64px;left:0;right:0;
+    background:rgba(6,4,8,0.97);
+    border-bottom:1px solid rgba(201,168,76,0.1);
+    padding:16px 0;z-index:999;gap:0;
+  }
+  .nav-links li a,.nav-links li button{padding:12px 24px;font-size:0.72rem;}
+  .char-dropdown-menu{position:static;transform:none;border:none;border-top:none;border-left:3px solid var(--blood);background:rgba(20,10,24,0.9);margin-left:20px;}
+  .char-dropdown:hover .char-dropdown-menu{display:none;}
+  .char-dropdown.open .char-dropdown-menu{display:block;}
+  .nav-toggle{display:flex;}
+  .detail-grid{grid-template-columns:1fr;}
+  .char-hero{padding:60px 24px 40px;}
+  .chars-grid{padding:40px 20px 80px;}
+  .story-container{padding:40px 20px 80px;}
+  .char-detail-body{padding:40px 20px 80px;}
+  .lore-container{padding:40px 20px 80px;}
+  .chapter-body{padding:24px 20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav id="mainNav">
+  <div class="nav-brand">KUSHAKA<span>Where the Shadow Bleeds</span></div>
+  <button class="nav-toggle" id="navToggle" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#" class="nav-link active" data-page="home">Home</a></li>
+    <li><a href="#" class="nav-link" data-page="story">The Story</a></li>
+    <li><a href="#" class="nav-link" data-page="characters">Characters</a></li>
+    <li class="char-dropdown" id="charDropdown">
+      <button class="nav-link" id="charDropBtn">Character Profiles ▾</button>
+      <div class="char-dropdown-menu" id="charMenu">
+        <a href="#" class="player-link char-profile-link" data-char="astra">Astra Vael</a>
+        <a href="#" class="ally-link char-profile-link" data-char="seraphine">Seraphine Drael</a>
+        <div class="sep"></div>
+        <a href="#" class="enemy-link char-profile-link" data-char="harbinger">The Harbinger</a>
+        <a href="#" class="char-profile-link" data-char="kings" style="color:rgba(160,120,48,0.8)">The Seven Kings</a>
+        <div class="sep"></div>
+        <a href="#" class="char-profile-link" data-char="shadowbroken" style="color:rgba(100,70,90,0.8)">Shadow-Broken</a>
+      </div>
+    </li>
+    <li><a href="#" class="nav-link" data-page="lore">World & Lore</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     HOME PAGE
+═══════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-orb"></div>
+    <p class="eyeline">A Dark Fantasy Game Concept</p>
+    <h1 class="hero-title">KUSHAKA</h1>
+    <p class="hero-sub">Where the Shadow Bleeds</p>
+    <div class="divider-line"></div>
+    <p class="hero-quote"><em>"The kings built a city on a curse.<br>The curse built a god on the city.<br>The god left one witness."</em></p>
+    <div class="hero-cta">
+      <a href="#" class="btn btn-primary nav-link" data-page="story">Read the Story</a>
+      <a href="#" class="btn btn-ghost nav-link" data-page="characters">Meet the Characters</a>
+    </div>
+    <div class="scroll-down">↓ &nbsp; Discover Kushaka &nbsp; ↓</div>
+  </section>
+
+  <div class="pull reveal">
+    <blockquote>Before the city had a name, something in the heart of the sun opened its eyes — and it had been waiting for exactly this moment for one hundred years.</blockquote>
+    <cite>— Prologue, The Fall of Kushaka</cite>
+  </div>
+
+  <div class="hr-deco reveal"><div class="diamond"></div><div class="diamond"></div><div class="diamond"></div></div>
+
+  <!-- Quick chapter teasers -->
+  <div style="max-width:1000px;margin:0 auto;padding:60px 32px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;" class="reveal">
+    <div class="theme-card">
+      <div class="theme-card-title">The Curse</div>
+      <p>Planted by an ancient entity before the city existed. Fed by gold. Sealed by greed. The ritual the kings performed every blood moon was never a prayer — it was a countdown.</p>
+    </div>
+    <div class="theme-card">
+      <div class="theme-card-title">The Relic</div>
+      <p>Buried deep beneath Kushaka's foundations. When the miners found it, they thought it was a crystal. When Seraphine placed it in the Heart Spire, she unknowingly lit a beacon across the cosmos.</p>
+    </div>
+    <div class="theme-card">
+      <div class="theme-card-title">The Betrayal</div>
+      <p>The kings who built Kushaka tore it apart in one night, commanding the execution of the city's greatest protectors to hand a relic to a god they had always served without knowing it.</p>
+    </div>
+    <div class="theme-card">
+      <div class="theme-card-title">The Bleed</div>
+      <p>A corruption that doesn't kill — it transforms. Shadows detach and consume. The infected wear the faces of people you loved. Every enemy in Kushaka used to be someone's home.</p>
+    </div>
+  </div>
+
+  <footer>
+    <div class="divider-line" style="margin:0 auto 28px;"></div>
+    <div class="footer-brand">KUSHAKA</div>
+    <p>Where the Shadow Bleeds &nbsp;·&nbsp; A Game Concept</p>
+    <p style="margin-top:8px;opacity:0.35;font-size:0.6rem;">The city is fallen. The Bleed spreads. One witness remains.</p>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════
+     STORY PAGE
+═══════════════════════════════════════ -->
+<div class="page" id="page-story">
+  <div class="story-hero">
+    <p class="page-label">The Complete Lore</p>
+    <h2 class="page-title">The Fall of Kushaka</h2>
+    <p class="page-tagline">"Seven kings. One curse. One hundred years. One night that ended everything."</p>
+  </div>
+
+  <div class="story-container">
+
+    <div class="chapter reveal">
+      <div class="chapter-head">
+        <div class="chapter-num">I</div>
+        <div class="chapter-info">
+          <div class="chapter-tag">Chapter One</div>
+          <div class="chapter-name">The Curse Before the City</div>
+        </div>
+        <div class="chapter-line"></div>
+      </div>
+      <div class="chapter-body">
+        <p class="drop">Before Kushaka had a name — before its first stone was laid or its first torch was lit — something ancient stirred in the heart of the sun. Not a god. Not a demon. Something <em>older than both</em>. A being that had spent millennia consuming civilizations the way flame consumes paper: completely, silently, and without leaving anything behind. Those who survived long enough to whisper of it called it only <strong>The Harbinger</strong> — the Symbol of Fear given form, or rather, given shadow.</p>
+        <p>Centuries before Kushaka was imagined, the Harbinger sensed a pulse from deep within the Earth. Raw. Ancient. Buried. A power so extraordinary that it stopped the entity cold — something it had never felt across its entire existence. A <em>Cosmic Relic</em>, older than any civilization, sleeping beneath layers of rock and forgotten time. The Harbinger craved it immediately. But it was dying — weakened from its last great consumption — and could not cross the void to Earth. Not yet.</p>
+        <p>So instead of attacking, it did something that no enemy of the Harbinger had ever survived: <em>it was patient.</em> It entered hibernation inside the sun's molten core, sealed itself in heat and silence for a hundred years — and before it closed its eyes, it reached across space with the last of its waning power and planted a curse. Not on a place. Not on a person. On <strong>greed itself</strong>. On the specific, uniquely human hunger that never fills. Then it slept, trusting that one century would do what it could not.</p>
+      </div>
+    </div>
+
+    <div class="chapter reveal">
+      <div class="chapter-head">
+        <div class="chapter-num">II</div>
+        <div class="chapter-info">
+          <div class="chapter-tag">Chapter Two</div>
+          <div class="chapter-name">The Seven Kings of Kushaka</div>
+        </div>
+        <div class="chapter-line"></div>
+      </div>
+      <div class="chapter-body">
+        <p class="drop">The curse landed like a seed in dark soil and over generations found exactly what it needed: seven men. Seven hollow, frightened men who wore gold crowns because crowns made them feel less afraid. The <strong>Seven Kings of Kushaka</strong> had inherited both their thrones and their curse from ancestors who had stumbled upon a ritual centuries before the city existed — a blood moon ceremony. Gold cast into black flame. Words spoken in a dead tongue. In return: health, wealth, dominion. A kingdom that never crumbled.</p>
+        <p>Their ancestors celebrated it as divine favour. Their fathers performed it without question. And the seven kings continued it, every blood moon, every year — because the alternative was unthinkable. They had each felt the ritual's pull: a pressure behind the eyes on blood moon nights, a voice inside their skulls that was not theirs. They were afraid of it. But the gold kept flowing, the city kept thriving, and frightened men who hold power will sacrifice anything except the power itself.</p>
+        <p>What no one understood — not the kings, not their scholars, not their priests — was that every ceremony was not a prayer. <em>It was a heartbeat</em>. Each blood moon fed the Harbinger's hibernation, kept the curse deepening into the city's soil, and silently counted down the years until the entity would wake and collect what it was owed. The kings were not rulers. They were instruments. And they had been playing the Harbinger's song for generations without once knowing the words.</p>
+        <p>Meanwhile, Kushaka itself had become extraordinary. A city of hundreds of thousands. Luminous towers and humming markets. Scholars mapping stars that hadn't been named yet. And at its heart — the <strong>Aegisnights</strong>, the last of an ancient warrior bloodline. Incorruptible. Fearless. Noble to the bone. They served the city with their lives, completely unaware of what rotted on the throne above them.</p>
+      </div>
+    </div>
+
+    <div class="chapter reveal">
+      <div class="chapter-head">
+        <div class="chapter-num">III</div>
+        <div class="chapter-info">
+          <div class="chapter-tag">Chapter Three</div>
+          <div class="chapter-name">The Relic Found</div>
+        </div>
+        <div class="chapter-line"></div>
+      </div>
+      <div class="chapter-body">
+        <p class="drop">Deep beneath Kushaka, miners were doing what miners do — digging for gold to feed the city's ever-hungry economy. Three hundred feet underground, on one particular dig, the earth cracked differently. The air turned cold. And a pickaxe struck something that rang not like mineral, but like a single note of music played at the very beginning of the universe.</p>
+        <p>They pulled it free: a crystal, deep violet at its core, warm to the touch despite the frozen dark around it. When it reached the surface and caught daylight, it didn't merely reflect the light — <em>it remembered it</em>, as if the sun recognized an old friend and leaned down. The miners, understanding only that this was beyond them, passed it upward through the chain of command until it reached <strong>Commander Seraphine Drael</strong> — the last surviving commander of the Aegisnights, a woman forged from discipline and iron resolve, bearing the scars of every battle she had fought for Kushaka on her armour and her face.</p>
+        <p>She held the crystal and felt something ancient turn toward her. She didn't understand it. But she felt — with a soldier's absolute certainty — that it belonged to the city. With a general's instinct and a protector's heart, she placed the Cosmic Relic at the <em>Heart Spire</em>, the great tower at Kushaka's centre. She believed she was doing something good. She was right, and catastrophically wrong, at the same time.</p>
+        <p>The transformation was immediate. Crops doubled. Disease vanished. The nights grew luminous. Children were born stronger. The elderly felt years lift. The whole city became more itself than it had ever been — radiant, alive, electric with an energy that had no earthly source. The people celebrated for weeks. The kings accepted the praise. And no one thought to ask what the crystal truly was. <em>Happiness rarely invites investigation.</em></p>
+      </div>
+    </div>
+
+    <div class="chapter reveal">
+      <div class="chapter-head">
+        <div class="chapter-num">IV</div>
+        <div class="chapter-info">
+          <div class="chapter-tag">Chapter Four</div>
+          <div class="chapter-name">The Harbinger Wakes</div>
+        </div>
+        <div class="chapter-line"></div>
+      </div>
+      <div class="chapter-body">
+        <p class="drop">In the sun's core, the hibernation ended. The Cosmic Relic — no longer buried, no longer sleeping, blazing from the centre of a city of three hundred thousand — was a beacon that reached across the void between worlds. And the Harbinger opened its eyes for the first time in a century.</p>
+        <p>That same night, the seven kings woke screaming from identical nightmares. The same image in every skull: a figure made of compressed darkness, wearing no face, standing at the foot of their beds. And a voice that came from inside their own minds: <em>"The contract is due. Bring me the relic before the third blood moon. Fail — and I will not take your lives. I will take your selves."</em></p>
+        <p>They understood with cold, gut-twisting clarity what the ritual had always been. Not a blessing. <strong>A leash.</strong> A hundred years of blood moons had built a debt, and the payment wasn't death — death would have been mercy. It was erasure. Their consciousness consumed. Their identities dissolved. Left behind: hollow vessels wearing their faces, walking in their shadows, serving the god they had unknowingly spent generations waking up. The Harbinger did not want to kill the kings. It wanted to <em>wear them.</em></p>
+      </div>
+    </div>
+
+    <div class="chapter reveal">
+      <div class="chapter-head">
+        <div class="chapter-num">V</div>
+        <div class="chapter-info">
+          <div class="chapter-tag">Chapter Five</div>
+          <div class="chapter-name">The Betrayal</div>
+        </div>
+        <div class="chapter-line"></div>
+      </div>
+      <div class="chapter-body">
+        <p class="drop">Cornered, terrified, stripped of everything except desperation, the seven kings appeared before their people — and made their demand publicly. Give us the crystal. Immediately. No explanation. No negotiation. The crowd went silent the way crowds do before they become something dangerous.</p>
+        <p>Then <strong>Commander Seraphine Drael</strong> stepped forward from the Aegisnights' ranks and looked at the kings with an expression colder than rage. She had suspected something was rotten in the throne room for years. She had never had proof. Now the kings were providing it themselves, in public, in front of the entire city. She refused. One word. Quiet. Absolute. And in that single refusal — spoken with the devastating calm of a warrior who knows exactly what she is choosing and chooses it anyway — the people of Kushaka found their voice. They refused too.</p>
+        <p>The kings, faced with the one thing they feared more than the Harbinger — <em>losing control</em> — commanded the execution of the Aegisnights. And in doing so, committed the final, unforgivable act: they turned Kushaka against itself. Steel against steel. Crown against city. For one bloody night, the civilization that had been built in love tore itself apart in betrayal. But none of it had ever mattered. Because while Seraphine fought on the steps of the Heart Spire and the kings hid behind their guards, <em>the shadows simply began to move wrong.</em></p>
+      </div>
+    </div>
+
+    <div class="chapter reveal">
+      <div class="chapter-head">
+        <div class="chapter-num">VI</div>
+        <div class="chapter-info">
+          <div class="chapter-tag">Chapter Six</div>
+          <div class="chapter-name">The Harbinger Arrives</div>
+        </div>
+        <div class="chapter-line"></div>
+      </div>
+      <div class="chapter-body">
+        <p class="drop">There was no grand entrance. No announcement. No moment to prepare. The darkness pooled where geometry said it couldn't. Torches snuffed without wind. And then, between one heartbeat and the next, the Harbinger was simply <em>there</em> — a figure-shaped compression of reality, bending the air around it the way heat bends light, wearing darkness the way a wound wears dried blood.</p>
+        <p>The kings saw it and ran. Not tactically. Not strategically. <strong>They ran</strong> — stumbling, falling over each other, seven golden crowns hitting bloodstained stone — and every pretence of power dissolved in an instant. The Harbinger moved through the chaos like smoke through a keyhole and ascended the Heart Spire. The Cosmic Relic reached toward it. The connection between them was so ancient and absolute that the ground shook with the recognition of it. The sky above Kushaka cracked open — not sunset red, not fire red, but the specific red of something that has been waiting a very long time and has finally arrived.</p>
+        <p>The Harbinger looked out over the city — all its beauty, all its chaos, all its hundreds of thousands of warm and terrified lives — and made a decision rooted in something colder than hatred. <em>Utility.</em> Kushaka was not worth destroying. It was worth using. The people had served one purpose in growing over the Relic. Now they would serve another.</p>
+      </div>
+    </div>
+
+    <div class="chapter reveal">
+      <div class="chapter-head">
+        <div class="chapter-num">VII</div>
+        <div class="chapter-info">
+          <div class="chapter-tag">Chapter Seven</div>
+          <div class="chapter-name">The Bleed</div>
+        </div>
+        <div class="chapter-line"></div>
+      </div>
+      <div class="chapter-body">
+        <p class="drop">It began as a sound. A frequency no instrument could measure — but every body felt it in the marrow, behind the eyes, in the chest cavity like a second heartbeat that belonged to something else entirely. Then the shadows detached.</p>
+        <p><strong>The Bleed</strong> was not a disease. It was the Cosmic Relic's power weaponized — a corruption that dissolved the boundary between a living person and the darkness inside them. Those infected did not die. <em>They transformed.</em> Their shadows peeled away and grew, consuming them from the feet upward, replacing flesh with dark matter and memory with hunger. What remained were the <strong>Shadow-Broken</strong> — creatures wearing the faces of the people they used to be, hunting by the sound of heartbeats, driven by an instinct that was neither human nor animal but something entirely new and terrible.</p>
+        <p>Within one night, half of Kushaka was gone. The remaining Aegisnights fought with everything they had. But you cannot cut a shadow with iron. By dawn, the city that had stood for a century lay silent — not in ruins, but <em>occupied</em>. Transformed. The greatest civilization of its age, swallowed by the dark it had unknowingly been growing inside itself all along.</p>
+      </div>
+    </div>
+
+    <div class="chapter reveal">
+      <div class="chapter-head">
+        <div class="chapter-num">VIII</div>
+        <div class="chapter-info">
+          <div class="chapter-tag">Chapter Eight — You Begin Here</div>
+          <div class="chapter-name">Astra</div>
+        </div>
+        <div class="chapter-line"></div>
+      </div>
+      <div class="chapter-body" style="border-left-color:var(--gold);">
+        <p class="drop">You were thirteen years old when the Bleed came. You remember your mother's voice the last time she said your name — <em>Astra</em> — in that particular tone she used when she was proud and afraid at the same time. You remember your father standing between you and the spreading dark with nothing but his body and everything he had. You remember the silence after. You don't remember how you survived the night. You shouldn't have. No one should have.</p>
+        <p>But you did. And when you came back to consciousness in the ruins of Kushaka — red sky cracking overhead, Shadow-Broken moving through streets you used to run as a child — something was different. The Bleed had touched you and <em>stopped</em>. As if something in your blood had refused it. As if you were meant for a purpose the Harbinger had not accounted for.</p>
+        <p>You have no army. No throne. No ancient bloodline. You are one person in a broken city, carrying nothing except the memory of two faces and the weight of love that has been turned into grief. But grief — real grief, the kind that doesn't perform itself — is not weakness. <em>It is fuel.</em></p>
+        <p style="text-align:center;font-family:'Cinzel',serif;font-size:1rem;color:var(--gold-light);letter-spacing:0.1em;">The Harbinger made one mistake.<br>It left you breathing.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="divider-line" style="margin:0 auto 28px;"></div>
+    <div class="footer-brand">KUSHAKA</div>
+    <p>Where the Shadow Bleeds &nbsp;·&nbsp; A Game Concept</p>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════
+     CHARACTERS PAGE
+═══════════════════════════════════════ -->
+<div class="page" id="page-characters">
+  <div class="chars-hero">
+    <p class="page-label">The Players in the Dark</p>
+    <h2 class="page-title">Characters of Kushaka</h2>
+    <p class="page-tagline">"Every soul in this story was shaped by what the kings refused to say."</p>
+  </div>
+
+  <div class="chars-grid">
+
+    <div class="char-card player reveal" onclick="showChar('astra')">
+      <div class="c-role">Protagonist · Player Character</div>
+      <div class="c-name">Astra Vael</div>
+      <div class="c-tagline">"The boy who should be dead — and isn't."</div>
+      <div class="c-desc">Thirteen years old. No title, no bloodline, no army. The Bleed touched him and <em>stopped</em> — something in his blood resists the corruption that consumed everyone he loved. He carries two memories and one purpose: make the Harbinger answer for what it took.</div>
+      <button class="c-btn">View Full Profile →</button>
+    </div>
+
+    <div class="char-card ally reveal" onclick="showChar('seraphine')">
+      <div class="c-role">Commander · Last Aegisknight</div>
+      <div class="c-name">Seraphine Drael</div>
+      <div class="c-tagline">"She saw the kings for what they were before anyone else dared to look."</div>
+      <div class="c-desc">The last commander of the Aegisnights. Iron-willed, battle-scarred, unbreakable. She placed the Relic in the Heart Spire believing it was a gift to her city. That decision haunts her more than any wound. Now half-consumed by the Bleed, she fights not to win — but to make sure Astra can.</div>
+      <button class="c-btn">View Full Profile →</button>
+    </div>
+
+    <div class="char-card enemy reveal" onclick="showChar('harbinger')">
+      <div class="c-role">The Entity · Final Antagonist</div>
+      <div class="c-name">The Harbinger</div>
+      <div class="c-tagline">"It does not hate you. It simply doesn't see you as significant."</div>
+      <div class="c-desc">Ancient beyond reckoning. It has consumed dozens of civilizations and remembers none of their names. Kushaka was a resource. The Bleed is an experiment. Astra is an anomaly it intends to <em>correct</em>. In a hundred centuries, it has never once been wrong about the outcome.</div>
+      <button class="c-btn">View Full Profile →</button>
+    </div>
+
+    <div class="char-card kings reveal" onclick="showChar('kings')">
+      <div class="c-role">Antagonists · The Fallen</div>
+      <div class="c-name">The Seven Kings</div>
+      <div class="c-tagline">"Cowards in golden armour who mistook inheritance for choice."</div>
+      <div class="c-desc">They did not choose the curse — they inherited it. But they chose silence over confession, greed over warning, and preservation of their crowns over the lives of three hundred thousand people. Now scattered in the ruins — some Shadow-Broken, some merely broken. Not worthy of hatred. Barely worthy of pity.</div>
+      <button class="c-btn">View Full Profile →</button>
+    </div>
+
+    <div class="char-card neutral reveal" onclick="showChar('shadowbroken')">
+      <div class="c-role">Enemies · The Transformed</div>
+      <div class="c-name">The Shadow-Broken</div>
+      <div class="c-tagline">"They wear the faces of the people Astra used to know."</div>
+      <div class="c-desc">Not monsters born from darkness — people transformed by the Bleed. Miners. Scholars. Soldiers. Neighbours. They remember nothing of who they were. But sometimes, in rare flickering moments, something almost like recognition crosses a Shadow-Broken face. Those are the worst moments in the game.</div>
+      <button class="c-btn">View Full Profile →</button>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="divider-line" style="margin:0 auto 28px;"></div>
+    <div class="footer-brand">KUSHAKA</div>
+    <p>Where the Shadow Bleeds &nbsp;·&nbsp; A Game Concept</p>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════
+     INDIVIDUAL CHARACTER PROFILES
+═══════════════════════════════════════ -->
+
+<!-- ASTRA -->
+<div class="char-page" id="char-astra">
+  <div class="char-hero" style="background:linear-gradient(160deg,rgba(15,10,5,0.95) 0%,rgba(30,18,5,0.7) 60%,transparent 100%);">
+    <div class="char-hero-bg" style="background:radial-gradient(ellipse 80% 60% at 60% 40%,rgba(201,168,76,0.08),transparent 65%);"></div>
+    <div class="char-hero-content">
+      <div class="char-hero-role" style="color:var(--gold);">Protagonist · Player Character · Survivor</div>
+      <div class="char-hero-name" style="background:linear-gradient(135deg,var(--gold-light),var(--gold),var(--ember));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Astra Vael</div>
+      <div class="char-hero-quote" style="color:var(--text);border-left-color:var(--gold);">
+        "I don't need to be the strongest person in Kushaka. I just need to be the last one standing when this ends."
+      </div>
+    </div>
+  </div>
+  <div class="char-detail-body">
+    <button class="back-btn" onclick="showChar(null)"><span>←</span> Back to Characters</button>
+    <div class="detail-grid">
+      <div class="detail-block"><div class="detail-block-title">Age</div><p>Thirteen years old at the time of the Bleed. Age unknown after.</p></div>
+      <div class="detail-block"><div class="detail-block-title">Status</div><p>Survivor. <em>The only person the Bleed touched and released.</em></p></div>
+      <div class="detail-block"><div class="detail-block-title">Bloodline</div><p>Unknown. No royal lineage. No warrior ancestry on record. The anomaly in his blood has no identified origin.</p></div>
+      <div class="detail-block"><div class="detail-block-title">Motivation</div><p>Vengeance. Memory. <em>The refusal to let his parents' deaths mean nothing.</em></p></div>
+    </div>
+    <div class="char-story-section">
+      <h3>His Story</h3>
+      <p>Astra Vael was an ordinary boy in an extraordinary city. The son of craftspeople, raised in the lower district of Kushaka where the lanterns stayed on all night and the markets never fully slept. He grew up knowing the Aegisnights by sight — recognizing Seraphine Drael's silhouette in the early morning patrols, feeling safe in a city that seemed like it would last forever.</p>
+      <p>When the Bleed came, Astra lost everything in the span of a single night. His mother. His father. His street. His city. The darkness moved through his home like water through paper, and something in him — some unidentifiable, nameless quality in his blood — resisted it. The Bleed tried to take him and stopped. Left him breathing. Left him alone in a city full of shadows wearing familiar faces.</p>
+      <p>He woke with a choice that wasn't really a choice at all: survive and do nothing, or survive and <em>matter</em>. Astra chose the latter not out of heroism — he would be the first to tell you that — but out of the simple, devastating logic of someone who has lost everything and realised that grief without direction is just slow death.</p>
+      <p>His immunity to the Bleed makes him uniquely able to move through Kushaka's infected streets. His youth makes him underestimated. His grief makes him <em>dangerous</em>. The Harbinger catalogued him as an anomaly and filed him under problems to be corrected. That was its first mistake. Underestimating what a thirteen-year-old with nothing left to lose is capable of — that was its last.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SERAPHINE -->
+<div class="char-page" id="char-seraphine">
+  <div class="char-hero" style="background:linear-gradient(160deg,rgba(5,15,20,0.95) 0%,rgba(10,25,35,0.7) 60%,transparent 100%);">
+    <div class="char-hero-bg" style="background:radial-gradient(ellipse 80% 60% at 60% 40%,rgba(74,143,168,0.07),transparent 65%);"></div>
+    <div class="char-hero-content">
+      <div class="char-hero-role" style="color:#4a8fa8;">Commander · Last of the Aegisnights · Mentor</div>
+      <div class="char-hero-name" style="background:linear-gradient(135deg,#a0d4e8,#4a8fa8,#2a5f78);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Seraphine Drael</div>
+      <div class="char-hero-quote" style="color:var(--text);border-left-color:#4a8fa8;">
+        "I placed the Relic in the Spire. I thought I was giving the city a gift. I think about that every single second."
+      </div>
+    </div>
+  </div>
+  <div class="char-detail-body">
+    <button class="back-btn" onclick="showChar(null)"><span>←</span> Back to Characters</button>
+    <div class="detail-grid">
+      <div class="detail-block"><div class="detail-block-title">Title</div><p>Commander of the Aegisnights. Last of the Drael bloodline.</p></div>
+      <div class="detail-block"><div class="detail-block-title">Status</div><p>Wounded. Partially Bleed-touched. Fighting with borrowed time and refusing to waste a second of it.</p></div>
+      <div class="detail-block"><div class="detail-block-title">Defining Trait</div><p>She refused the kings' order in front of the entire city. <em>That single word — "No" — cost her everything she had built and she would say it again without hesitation.</em></p></div>
+      <div class="detail-block"><div class="detail-block-title">Role in the Game</div><p>Mentor. Tactician. Protector. The person who makes sure Astra survives long enough to become who he needs to be.</p></div>
+    </div>
+    <div class="char-story-section">
+      <h3>Her Story</h3>
+      <p>Seraphine Drael spent twenty years earning the title of Commander. She fought in border wars that historians would spend decades debating. She outlived three predecessors and a dozen enemies who had been certain, at one point or another, that they had her. She was not invincible — her armour is a record of every time she almost wasn't — but she was consistent in a way that mattered more: she always got back up.</p>
+      <p>When the miners brought the crystal up from underground, it was Seraphine who made the call to place it in the Heart Spire. In retrospect, that decision haunts her more than any battle wound. She had felt something when she held the Relic — a recognition she couldn't name — and she had interpreted it as belonging. As rightness. She was not wrong about the feeling. She was catastrophically wrong about what it meant.</p>
+      <p>When the kings made their demand at the spire, Seraphine had already been watching them for years — cataloguing small wrongnesses that never quite assembled into proof. In that moment, they assembled all at once. She refused. And in refusing, she gave the people of Kushaka a blueprint for what courage looked like: quiet, certain, and entirely without self-preservation.</p>
+      <p>The Bleed reached Seraphine during the battle but couldn't fully take her — the Cosmic Relic's energy, which she had held and placed, left something in her blood that resists the corruption even as it encroaches. She survives the fall of Kushaka in fragments, holding herself together through discipline and the specific, unflinching stubbornness of someone who refuses to die before they have fixed what they helped break.</p>
+      <p>She finds Astra in the ruins. She recognises, immediately, what his immunity means. <em>She stops fighting to survive. She starts fighting to give him time.</em></p>
+    </div>
+  </div>
+</div>
+
+<!-- HARBINGER -->
+<div class="char-page" id="char-harbinger">
+  <div class="char-hero" style="background:linear-gradient(160deg,rgba(10,2,5,0.97) 0%,rgba(20,5,10,0.75) 60%,transparent 100%);">
+    <div class="char-hero-bg" style="background:radial-gradient(ellipse 80% 60% at 60% 40%,rgba(139,0,0,0.12),transparent 65%);"></div>
+    <div class="char-hero-content">
+      <div class="char-hero-role" style="color:var(--crimson);">The Entity · The Symbol of Fear · Final Antagonist</div>
+      <div class="char-hero-name" style="background:linear-gradient(135deg,#d4521a,#8b0000,#3a0000);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">The Harbinger</div>
+      <div class="char-hero-quote" style="color:var(--text);border-left-color:var(--blood);">
+        "It has no interest in your suffering. It has no interest in you at all. That is what makes it monstrous."
+      </div>
+    </div>
+  </div>
+  <div class="char-detail-body">
+    <button class="back-btn" onclick="showChar(null)"><span>←</span> Back to Characters</button>
+    <div class="detail-grid">
+      <div class="detail-block"><div class="detail-block-title">True Name</div><p><em>Veyrath.</em> A name so old it predates the language it belongs to. The Harbinger does not use it. It has no need of names.</p></div>
+      <div class="detail-block"><div class="detail-block-title">Age</div><p>Unknown. It was ancient when the oldest human civilizations were new.</p></div>
+      <div class="detail-block"><div class="detail-block-title">Nature</div><p>It does not think of itself as evil. It thinks of civilizations as resources. It thinks of Astra as a variable. <em>It has not yet thought of him as a threat.</em></p></div>
+      <div class="detail-block"><div class="detail-block-title">Weakness</div><p>Unknown — to everyone, including itself. Whatever is in Astra's blood that resists the Bleed is something the Harbinger has never encountered. It does not know what it doesn't know.</p></div>
+    </div>
+    <div class="char-story-section">
+      <h3>What It Is</h3>
+      <p>The Harbinger is not a conqueror. Conquerors want to rule. The Harbinger wants to <em>consume</em> — to take the energy of civilizations and use it to sustain itself, endlessly, across centuries. Kushaka was not its first. It will not be its last, if Astra fails.</p>
+      <p>It does not hate humanity. Hatred requires consideration, and the Harbinger does not consider humans significant enough to feel strongly about. They are ecosystems. Resources. The Bleed is not an act of cruelty — it is an act of harvesting. The Shadow-Broken are not monsters created out of malice. They are byproducts. Waste material repurposed into tools.</p>
+      <p>The curse it planted on greed was not personal. It was simply the most efficient mechanism available. Greed is reliable. Greed is patient. Greed will always find a ritual, always perform it, always repeat it, always feed whatever needs feeding. The Harbinger understood this because it spent enough time observing humanity to learn its most consistent truth: <em>people will do almost anything if you make the doing feel like prosperity.</em></p>
+      <p>What it does not understand — what it has never had to understand in centuries of identical conquests — is what happens when a person has nothing left to lose. It catalogued Astra as an anomaly. It filed him away as a variable to be corrected. It turned its attention to the larger project of processing Kushaka and never looked back. That is its flaw. That is the only flaw it has ever had. <em>It has never once, across a hundred civilizations, left a witness.</em></p>
+    </div>
+  </div>
+</div>
+
+<!-- SEVEN KINGS -->
+<div class="char-page" id="char-kings">
+  <div class="char-hero" style="background:linear-gradient(160deg,rgba(12,8,2,0.97) 0%,rgba(22,14,5,0.75) 60%,transparent 100%);">
+    <div class="char-hero-bg" style="background:radial-gradient(ellipse 80% 60% at 60% 40%,rgba(160,120,48,0.07),transparent 65%);"></div>
+    <div class="char-hero-content">
+      <div class="char-hero-role" style="color:#a07830;">Antagonists · The Cursed Rulers · The Fallen</div>
+      <div class="char-hero-name" style="background:linear-gradient(135deg,#c8a050,#7a6030,#3a2a10);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">The Seven Kings</div>
+      <div class="char-hero-quote" style="color:var(--text);border-left-color:#a07830;">
+        "They were not born evil. They were born afraid — and given just enough power to make it everyone else's problem."
+      </div>
+    </div>
+  </div>
+  <div class="char-detail-body">
+    <button class="back-btn" onclick="showChar(null)"><span>←</span> Back to Characters</button>
+    <div class="detail-grid">
+      <div class="detail-block"><div class="detail-block-title">Collective Title</div><p>The Seven Kings of Kushaka. Rulers of the most powerful city of their era.</p></div>
+      <div class="detail-block"><div class="detail-block-title">The Eldest King</div><p><em>Mordechai</em> — the most terrified of the seven and therefore the most dangerous. Every atrocity the kings committed was his idea first.</p></div>
+      <div class="detail-block"><div class="detail-block-title">Their Crime</div><p>Not the curse — they inherited that. Their crime was silence. A hundred years of choosing comfort over confession.</p></div>
+      <div class="detail-block"><div class="detail-block-title">Their Fate</div><p>Scattered. Some consumed by the Bleed. Some wandering the ruins as shadows of men. None of them ruling anything. Not one of them has removed their crown.</p></div>
+    </div>
+    <div class="char-story-section">
+      <h3>Who They Were</h3>
+      <p>The easiest thing in the world would be to call the Seven Kings simply evil and move on. But the most honest and most disturbing truth about them is this: they were ordinary men who inherited an extraordinary problem and chose, at every available fork in the road, the path that preserved their comfort. That choice, repeated enough times across enough years, <em>became</em> evil. Not in a dramatic moment. In the accumulation of silences.</p>
+      <p>They knew — or suspected — that the blood moon ritual was something darker than tradition. The voice behind the eyes grew louder every year. The ritual's demands occasionally shifted in ways that required them to do things they preferred not to remember. They had scholars who asked uncomfortable questions, and those scholars had a habit of disappearing. They had advisors who suggested transparency, and those advisors had a habit of being reassigned to distant posts.</p>
+      <p>They told themselves they were protecting the city. That the people were better off not knowing. That ignorance was a form of kindness. This is what cowardice always tells itself to sleep at night.</p>
+      <p>When the Harbinger gave them their ultimatum, they revealed themselves completely — not as villains who had always been plotting, but as men who had always been scared and had simply run out of room to hide it. They commanded Seraphine's execution not out of cruelty but out of panic. They ran when the Harbinger arrived not out of strategy but out of the same reflex that had driven every decision they'd ever made. <em>In the end, all seven of them chose themselves. They always had.</em></p>
+    </div>
+  </div>
+</div>
+
+<!-- SHADOW-BROKEN -->
+<div class="char-page" id="char-shadowbroken">
+  <div class="char-hero" style="background:linear-gradient(160deg,rgba(5,3,10,0.97) 0%,rgba(12,8,18,0.75) 60%,transparent 100%);">
+    <div class="char-hero-bg" style="background:radial-gradient(ellipse 80% 60% at 60% 40%,rgba(60,30,80,0.1),transparent 65%);"></div>
+    <div class="char-hero-content">
+      <div class="char-hero-role" style="color:#7a5a90;">Enemies · The Transformed · The Lost</div>
+      <div class="char-hero-name" style="background:linear-gradient(135deg,#a080b8,#6a4a88,#2a1a3a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Shadow-Broken</div>
+      <div class="char-hero-quote" style="color:var(--text);border-left-color:#6a4a88;">
+        "They are not your enemies. They were your neighbours. That is the whole point."
+      </div>
+    </div>
+  </div>
+  <div class="char-detail-body">
+    <button class="back-btn" onclick="showChar(null)"><span>←</span> Back to Characters</button>
+    <div class="detail-grid">
+      <div class="detail-block"><div class="detail-block-title">Origin</div><p>Every Shadow-Broken was a Kushakan citizen. Miners. Merchants. Children. Soldiers. The Bleed took them all without distinction.</p></div>
+      <div class="detail-block"><div class="detail-block-title">Nature</div><p>Dark matter and fractured memory. They hunt by heartbeat. They do not feel pain. They do not feel anything — except, occasionally, something almost like recognition.</p></div>
+      <div class="detail-block"><div class="detail-block-title">Notable Variant</div><p><em>Nyxara</em> — a Shadow-Broken who retained partial consciousness. Neither fully human nor fully consumed. Potentially the most dangerous entity in Kushaka.</p></div>
+      <div class="detail-block"><div class="detail-block-title">Weakness</div><p>The same quality in Astra's blood that resists the Bleed can, under the right conditions, reach the last remnant of a Shadow-Broken's original self. Whether that is mercy or weapon has yet to be determined.</p></div>
+    </div>
+    <div class="char-story-section">
+      <h3>What They Are</h3>
+      <p>The Harbinger designed the Bleed to be efficient. It needed Kushaka's population converted into mobile, self-sustaining instruments for processing the Cosmic Relic's energy. The Shadow-Broken are the result: people repurposed. The body, transformed. The memory, consumed. What remains is capable of movement, of hunting, of receiving and carrying out the Harbinger's ambient will without requiring instruction.</p>
+      <p>What the Harbinger did not anticipate — because it had never needed to before — was that some people are difficult to fully erase. Their identity is too dense, too defined, too deeply themselves. In most cases the Bleed simply overpowers this. But in rare instances — in people of extraordinary will, or in those who had contact with the Cosmic Relic's energy — the transformation is incomplete.</p>
+      <p><em>Nyxara</em> was a senior Aegisknight who fell in the battle at the Heart Spire. The Bleed reached her during a moment when she was physically touching the Relic's plinth, and the collision of energies created something that has no precedent: a Shadow-Broken who remembers her name. Who knows what she was. Who understands, in her fractured way, what she has become — and feels something about it that she cannot yet name but that looks, from certain angles, like rage.</p>
+      <p>She is not an ally. She is not quite an enemy. She is a question the game will spend significant time asking: <em>if the transformation can be incomplete, can it be reversed? And if it can — should it be, when what you would bring back into the world is a warrior who has been through what Nyxara has been through?</em></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     LORE PAGE
+═══════════════════════════════════════ -->
+<div class="page" id="page-lore">
+  <div class="story-hero">
+    <p class="page-label">The World of Kushaka</p>
+    <h2 class="page-title">World & Lore</h2>
+    <p class="page-tagline">"Names. Places. Themes. The bones beneath the story."</p>
+  </div>
+
+  <div class="lore-container">
+
+    <div class="lore-section reveal">
+      <div class="lore-title">Recommended Names</div>
+      <div class="lore-sub">Characters, locations, and lore terms designed for the world of Kushaka</div>
+      <div class="names-grid">
+        <div class="name-tile"><span class="nm">Astra Vael</span><span class="nu">The Protagonist</span></div>
+        <div class="name-tile"><span class="nm">Seraphine Drael</span><span class="nu">Last Aegisknight Commander</span></div>
+        <div class="name-tile"><span class="nm">Mordechai</span><span class="nu">Eldest of the Seven Kings</span></div>
+        <div class="name-tile"><span class="nm">Veyrath</span><span class="nu">The Harbinger's true name</span></div>
+        <div class="name-tile"><span class="nm">Nyxara</span><span class="nu">The Partial Shadow-Broken</span></div>
+        <div class="name-tile"><span class="nm">The Heart Spire</span><span class="nu">Centre of Kushaka / The Sunken Spire post-Bleed</span></div>
+        <div class="name-tile"><span class="nm">The Pale Accord</span><span class="nu">The kings' original contract name</span></div>
+        <div class="name-tile"><span class="nm">Kaelith</span><span class="nu">The Old Quarter district</span></div>
+        <div class="name-tile"><span class="nm">The Ashbound</span><span class="nu">Survivors of the Bleed</span></div>
+        <div class="name-tile"><span class="nm">Duskmarked</span><span class="nu">Those partially infected</span></div>
+        <div class="name-tile"><span class="nm">Sorevast</span><span class="nu">The world beyond Kushaka</span></div>
+        <div class="name-tile"><span class="nm">The Warden's Bell</span><span class="nu">Final dungeon location</span></div>
+        <div class="name-tile"><span class="nm">The Bleed</span><span class="nu">The Harbinger's weapon</span></div>
+        <div class="name-tile"><span class="nm">Vael's Immunity</span><span class="nu">In-world term for Astra's resistance</span></div>
+        <div class="name-tile"><span class="nm">The Blood Moon Rite</span><span class="nu">The kings' annual ritual</span></div>
+        <div class="name-tile"><span class="nm">Cosmic Relic</span><span class="nu">The ancient power source</span></div>
+      </div>
+    </div>
+
+    <div class="hr-deco reveal"><div class="diamond"></div><div class="diamond"></div><div class="diamond"></div></div>
+
+    <div class="lore-section reveal" style="margin-top:60px;">
+      <div class="lore-title">Core Themes</div>
+      <div class="lore-sub">The ideas that make Kushaka more than a story about a monster</div>
+      <div class="theme-cards">
+        <div class="theme-card">
+          <div class="theme-card-title">Inherited Evil</div>
+          <p>The kings didn't choose the curse. They inherited it — and chose silence. The game asks: at what point does complicity become evil? How many blood moons does it take for an inherited wrong to become a chosen one?</p>
+        </div>
+        <div class="theme-card">
+          <div class="theme-card-title">Grief as Fuel</div>
+          <p>Astra's strength comes not from training or destiny but from love that was taken and the refusal to let that mean nothing. Grief, properly channelled, is the most sustainable source of power in the game's world.</p>
+        </div>
+        <div class="theme-card">
+          <div class="theme-card-title">Indifferent Evil</div>
+          <p>The Harbinger is not evil the way storybook villains are evil. It simply does not see humanity as significant. That indifference — the knowledge that you are not even worth hating — is far more terrifying than malice.</p>
+        </div>
+        <div class="theme-card">
+          <div class="theme-card-title">Corruption & Identity</div>
+          <p>Shadow-Broken wear the faces of people Astra knew. Every enemy encounter carries emotional weight. Every battle in Kushaka is also, in some sense, a funeral — and Astra is always the only mourner.</p>
+        </div>
+        <div class="theme-card">
+          <div class="theme-card-title">Good Intentions</div>
+          <p>Seraphine placing the Relic in the Spire was an act of pure good faith. The kings performing the ritual were, at first, simply continuing tradition. The road to Kushaka's fall is paved entirely with comprehensible decisions.</p>
+        </div>
+        <div class="theme-card">
+          <div class="theme-card-title">The City as Character</div>
+          <p>Kushaka's beauty — its towers, its markets, its light — is not backdrop. It is a character that the audience comes to love before they have to watch it fall. The loss must be felt. The loss must matter.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pull reveal">
+      <blockquote>One hundred years of blood moons. One night of consequences. One boy standing in the wreckage with nothing to lose and everything to prove.</blockquote>
+      <cite>— The World of Kushaka</cite>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="divider-line" style="margin:0 auto 28px;"></div>
+    <div class="footer-brand">KUSHAKA</div>
+    <p>Where the Shadow Bleeds &nbsp;·&nbsp; A Game Concept</p>
+    <p style="margin-top:8px;opacity:0.3;font-size:0.6rem;">The city is fallen. The Bleed spreads. One witness remains.</p>
+  </footer>
+</div>
+
+<script>
+// ── PAGE NAVIGATION ──
+const pages = document.querySelectorAll('.page');
+const navLinks = document.querySelectorAll('.nav-link[data-page]');
+const charPages = document.querySelectorAll('.char-page');
+
+function showPage(pageId) {
+  pages.forEach(p => p.classList.remove('active'));
+  charPages.forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('page-' + pageId);
+  if (target) {
+    target.classList.add('active');
+    window.scrollTo(0,0);
+  }
+  navLinks.forEach(l => {
+    l.classList.toggle('active', l.dataset.page === pageId);
+  });
+  triggerReveal();
+}
+
+navLinks.forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    showPage(link.dataset.page);
+    if (window.innerWidth <= 768) {
+      document.getElementById('navLinks').classList.remove('open');
+    }
+  });
+});
+
+// character profile links in nav dropdown
+document.querySelectorAll('.char-profile-link').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    showChar(link.dataset.char);
+    if (window.innerWidth <= 768) {
+      document.getElementById('navLinks').classList.remove('open');
+    }
+  });
+});
+
+function showChar(charId) {
+  if (!charId) {
+    pages.forEach(p => p.classList.remove('active'));
+    charPages.forEach(p => p.classList.remove('active'));
+    document.getElementById('page-characters').classList.add('active');
+    window.scrollTo(0,0);
+    navLinks.forEach(l => l.classList.toggle('active', l.dataset.page === 'characters'));
+    triggerReveal();
+    return;
+  }
+  pages.forEach(p => p.classList.remove('active'));
+  charPages.forEach(p => p.classList.remove('active'));
+  const cp = document.getElementById('char-' + charId);
+  if (cp) { cp.classList.add('active'); window.scrollTo(0,0); }
+  navLinks.forEach(l => l.classList.remove('active'));
+}
+
+// ── MOBILE NAV ──
+const toggle = document.getElementById('navToggle');
+const navEl = document.getElementById('navLinks');
+const dropBtn = document.getElementById('charDropBtn');
+const dropDown = document.getElementById('charDropdown');
+
+toggle.addEventListener('click', () => navEl.classList.toggle('open'));
+
+if (window.innerWidth <= 768) {
+  dropBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    dropDown.classList.toggle('open');
+  });
+}
+
+// ── SCROLL REVEAL ──
+function triggerReveal() {
+  setTimeout(() => {
+    const reveals = document.querySelectorAll('.reveal:not(.visible)');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+    reveals.forEach(r => observer.observe(r));
+  }, 100);
+}
+triggerReveal();
+
+// ── PARALLAX HERO ──
+document.addEventListener('mousemove', (e) => {
+  const orb = document.querySelector('.hero-orb');
+  if (orb) {
+    const x = (e.clientX / window.innerWidth - 0.5) * 28;
+    const y = (e.clientY / window.innerHeight - 0.5) * 18;
+    orb.style.transform = `translateX(calc(-50% + ${x}px)) translateY(${y}px)`;
+  }
+});
+</script>
+</body>
+</html>
